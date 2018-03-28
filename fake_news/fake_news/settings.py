@@ -115,7 +115,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
 
     # Using your own custom ExceptionHandler
-    'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler'
+    # 'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler'
 }
 
 # Swagger Settings

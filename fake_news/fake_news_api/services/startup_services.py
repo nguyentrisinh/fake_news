@@ -14,3 +14,4 @@ class StartupServices:
     def simple_ping_from_other_app(self, data):
         ping = self.startup_crawler_services.simple_ping_from_different_app(data)
         return ping
+
