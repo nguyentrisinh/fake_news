@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class CrawlerEngineConfig(AppConfig):
-    name = 'crawler_engine'
+    name = 'fake_news.crawler_engine'
+
+    def ready(self):
+        pass
