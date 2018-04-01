@@ -14,7 +14,7 @@ class NewsDetail(models.Model):
     # News detail
     title = models.CharField(max_length=1000, null=True, blank=True)
     top_image_url = models.CharField(max_length=1000, null=True, blank=True)
-    top_image = models.ImageField(upload_to='news/top_images/', null=True, blank=True, max_length=1000)
+    # top_image = models.ImageField(upload_to='news/top_images/', null=True, blank=True, max_length=1000)
     details = models.TextField(null=True, blank=True)
     authors = models.CharField(max_length=255, null=True, blank=True)
     category = models.CharField(max_length=255, null=True, blank=True)
