@@ -10,9 +10,14 @@ import scrapy
 from scrapy_djangoitem import DjangoItem
 from scrapy.item import Field
 
-from crawler_engine.models import StartupModel
+from crawler_engine.models import StartupModel, NewsDetail
 
 
 class StartupModelItem(DjangoItem):
     # fields for this item are automatically created from the django model
     django_model = StartupModel
+
+
+class NewsDetailItem(DjangoItem):
+    django_model = NewsDetail
+
