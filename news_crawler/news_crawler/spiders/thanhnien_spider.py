@@ -8,6 +8,7 @@ import datetime
 from dateutil   import parser
 # from .items import NewsItem
 import scrapy
+from ..items import NewsDetailItem
 
 MAX_PAGE = 10
 
@@ -27,9 +28,9 @@ class ThanhNienSpider(CrawlSpider):
     )
     def parse_item(self, response):
         hxs = Selector(response)
-        item = {}
+        item = NewsDetailItem()
         # base_url, url, title, top_image_url, details, authors, category, keywords, published_date, status, crawled, created_at, updated_at
-        item['base_url'] = domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(response.url))
+        item['base_url'] = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(response.url))
 
         item['url'] = response.url
 
@@ -61,7 +62,7 @@ class ThanhNienSpider(CrawlSpider):
 
         item['updated_at'] = datetime.date.today()
 
-        yield item
+        return item
 
     def parse_page(self, response):
         links = response.xpath('//article[@class="story"]/a/@href').extract()
