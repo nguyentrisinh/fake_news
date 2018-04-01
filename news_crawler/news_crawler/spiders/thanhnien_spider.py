@@ -54,13 +54,13 @@ class ThanhNienSpider(CrawlSpider):
 
         item['published_date'] = parser.parse(''.join(hxs.select('//meta[@itemprop="datePublished"]/@content').extract()).strip() + '\n')
 
-        item['status'] = 0
+        item['status'] = 1
 
-        item['crawled']= datetime.date.today()
-
-        item['created_at'] = datetime.date.today()
-
-        item['updated_at'] = datetime.date.today()
+        # item['crawled']= datetime.date.today()
+        #
+        # item['created_at'] = datetime.date.today()
+        #
+        # item['updated_at'] = datetime.date.today()
 
         return item
 
