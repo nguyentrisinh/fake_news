@@ -20,7 +20,7 @@ word_tokens = word_tokenize(preprecessor_words)
 
 # Loai bo stop word
 filtered_sentence = [w for w in word_tokens if not w in stop_words]
-
+# Continue, xu ly nhung dau cau thua nhu dau phay, dau cham ....
 
 print(filtered_sentence)
 
