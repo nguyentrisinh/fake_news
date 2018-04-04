@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from scrapy.spider import BaseSpider
+
 from ..items import StartupModelItem
 
 
