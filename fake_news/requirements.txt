@@ -33,6 +33,7 @@ pycparser==2.18
 PyDispatcher==2.0.5
 pyOpenSSL==17.5.0
 pypiwin32==223
+python-dateutil==2.7.2
 pytz==2017.2
 pywin32==223
 queuelib==1.5.0

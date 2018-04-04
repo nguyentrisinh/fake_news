@@ -25,7 +25,7 @@ class DanTriSpider(CrawlSpider):
         # Rule(LinkExtractor(allow='{}\/'.format(allowed_categories), follow=True)),
 
         # Rule for page
-        Rule(LinkExtractor(allow='{}\/((trang-[0-2].html$)|(^$))'.format(allowed_categories)), callback="parse_page",
+        Rule(LinkExtractor(allow='{}\/((trang-[0-2].htm$)|(^$))'.format(allowed_categories)), callback="parse_page",
              follow=True),
 
     )
@@ -36,15 +36,15 @@ class DanTriSpider(CrawlSpider):
         return StartupModelItem(name='rolando')
 
     def parse_page(self, response):
-        links = response.xpath("//div[@class='mt3 clearfix']/a/@href").extract()
-        print(links)
-        print(self.test_str)
+        links = response.xpath("//div[@class='mt3 clearfix eplcheck']/a/@href").extract()
+        # links = response.xpath('//div[@class="mt3"]').extract()
+        # print(links, response)
 
         crawled_links = []
 
         for link in links:
             full_link = 'http://dantri.com.vn{}'.format(link)
-            if full_link not in links:
+            if full_link not in crawled_links:
                 print(full_link, '---------------------------------------------')
                 crawled_links.append(full_link)
                 yield Request(full_link, self.parse_item)
