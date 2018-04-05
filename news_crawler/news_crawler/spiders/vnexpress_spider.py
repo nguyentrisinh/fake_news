@@ -24,10 +24,13 @@ class VnExpressSpider(CrawlSpider):
 
     rules = (
         # Rule(LinkExtractor(restrict_xpaths="//nav[@id='sub_menu']//a"), follow=True),
-        Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
+        # Follow ca main menu
+        # Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
+        # Follow luon sub menu
+        # Rule(LinkExtractor(restrict_xpaths='//nav[@id="main_menu"]//a'), follow=True),
 
-        Rule(LinkExtractor(allow='tin-tuc\/%s\/((page\/[0-2].html$)|(^$))' % allowed_categories),
-             callback="parse_page", follow=True),
+        Rule(LinkExtractor(allow='tin-tuc\/(%s)((\/([\w-])*)?)((\/page\/[0-2].html$)|(/$)|$)' % allowed_categories),
+             callback="parse_page",follow=True),
     )
 
     crawled_links = []
@@ -61,6 +64,8 @@ class VnExpressSpider(CrawlSpider):
         hxs = Selector(response)
         # create news_item object
         news_item = NewsDetailItem()
+
+        #comment here
 
         news_item['base_url'] = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(response.url))
 
@@ -129,10 +134,15 @@ class VnExpressSpider(CrawlSpider):
         # --------------------- Make News' status default ---------------------
         news_item['status'] = 1
 
+
+        #end comment hrer
+
+        # print(news_ite)
+
         return news_item
 
     def parse_page(self, response):
-        if self.check_page_is_main_list_page(response):
+        # if self.check_page_is_main_list_page(response):
             links = response.xpath('//article[@class="list_news"]/h3/a/@href').extract()
             if links:
                 # run all link in links
