@@ -16,7 +16,7 @@ class VnExpressSpider(CrawlSpider):
     name = 'vn_express_spider'
     allowed_domains = ['vnexpress.net']
 
-    allowed_categories = 'thoi-su|phap-luat|the-gioi'
+    allowed_categories = 'the-gioi|thoi-su'
 
     start_urls = [
         'https://vnexpress.net'
@@ -24,21 +24,10 @@ class VnExpressSpider(CrawlSpider):
 
     rules = (
         # Rule(LinkExtractor(restrict_xpaths="//nav[@id='sub_menu']//a"), follow=True),
-        # Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
-        #
-        # Rule(LinkExtractor(allow='tin-tuc\/%s\/((page\/[0-2].html$)|(^$))' % allowed_categories),
-        #      callback="parse_page", follow=True),
+        Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
 
         Rule(LinkExtractor(allow='tin-tuc\/%s\/((page\/[0-2].html$)|(^$))' % allowed_categories),
              callback="parse_page", follow=True),
-
-        Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
-
-
-
-
-        # Rule(LinkExtractor(allow='tin-tuc\/%s\/((page\/[0-2]\.html$))' % allowed_categories),
-        #      callback="parse_page", follow=True),
     )
 
     crawled_links = []
@@ -62,7 +51,6 @@ class VnExpressSpider(CrawlSpider):
 
         full_link = 'https://vnexpress.net' + category + '/page/'
         if response.url.find(full_link) != -1:
-            print(full_link, '------------------------------', response.url)
             return True
 
         return False
@@ -144,11 +132,12 @@ class VnExpressSpider(CrawlSpider):
         return news_item
 
     def parse_page(self, response):
-        links = response.xpath('//article[@class="list_news"]/h3/a/@href').extract()
-        if links:
-            # run all link in links
-            for link in links:
-                # print(link)
-                if link not in self.crawled_links:
-                    self.crawled_links.append(link)
-                    yield Request(link, self.parse_item)
+        if self.check_page_is_main_list_page(response):
+            links = response.xpath('//article[@class="list_news"]/h3/a/@href').extract()
+            if links:
+                # run all link in links
+                for link in links:
+                    # print(link)
+                    if link not in self.crawled_links:
+                        self.crawled_links.append(link)
+                        yield Request(link, self.parse_item)
