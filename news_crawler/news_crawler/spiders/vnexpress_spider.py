@@ -59,8 +59,13 @@ class VnExpressSpider(CrawlSpider):
         return False
 
     def parse_item(self, response):
+        # check trong db
         if not self.check_already_crawled_url(response):
             return None
+        #check trong luc chay
+        if response.url in self.crawled_links:
+            return None
+        self.crawled_links.append(response.url)
         hxs = Selector(response)
         # create news_item object
         news_item = NewsDetailItem()
@@ -141,13 +146,13 @@ class VnExpressSpider(CrawlSpider):
 
         return news_item
 
-    def parse_page(self, response):
-        # if self.check_page_is_main_list_page(response):
-            links = response.xpath('//article[@class="list_news"]/h3/a/@href').extract()
-            if links:
-                # run all link in links
-                for link in links:
-                    # print(link)
-                    if link not in self.crawled_links:
-                        self.crawled_links.append(link)
-                        yield Request(link, self.parse_item)
+    # def parse_page(self, response):
+    #     # if self.check_page_is_main_list_page(response):
+    #         links = response.xpath('//article[@class="list_news"]/h3/a/@href').extract()
+    #         if links:
+    #             # run all link in links
+    #             for link in links:
+    #                 # print(link)
+    #                 if link not in self.crawled_links:
+    #                     self.crawled_links.append(link)
+    #                     yield Request(link, self.parse_item)
