@@ -28,9 +28,9 @@ class VnExpressSpider(CrawlSpider):
         # Rule(LinkExtractor(restrict_xpaths='//nav[@id="sub_menu"]//a'), follow=True),
         # Follow luon sub menu
         # Rule(LinkExtractor(restrict_xpaths='//nav[@id="main_menu"]//a'), follow=True),
-
-        Rule(LinkExtractor(allow='tin-tuc\/(%s)((\/([\w-])*)?)((\/page\/[0-2].html$)|(/$)|$)' % allowed_categories),
-             callback="parse_page",follow=True),
+        Rule(LinkExtractor(allow='tin-tuc\/(%s)((\/([\w-])*)?)\/([\/\w-])*[0-9]*\.html$' % allowed_categories),
+             callback="parse_item"),
+        Rule(LinkExtractor(allow='tin-tuc\/(%s)((\/([\w-])*)?)((\/page\/[0-2].html$)|(/$)|$)' % allowed_categories),follow=True),
     )
 
     crawled_links = []
