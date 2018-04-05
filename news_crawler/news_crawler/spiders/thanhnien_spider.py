@@ -70,12 +70,9 @@ class ThanhNienSpider(CrawlSpider):
 
     def parse_page(self, response):
         links = response.xpath('//article[@class="story"]/a/@href').extract()
-
         crawledLinks = []
         for link in links:
             if link not in crawledLinks:
                 link = 'https://thanhnien.vn%s' % link
-
-                print(link, '----------------------')
                 crawledLinks.append(link)
                 yield Request(link, self.parse_item)

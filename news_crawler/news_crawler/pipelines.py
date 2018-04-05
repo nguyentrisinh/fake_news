@@ -9,5 +9,7 @@
 class NewsCrawlerPipeline(object):
     def process_item(self, item, spider):
         # print(item, '---------test-----------')
-        # item.save()
+        if item is not None:
+            item.save()
+
         return item

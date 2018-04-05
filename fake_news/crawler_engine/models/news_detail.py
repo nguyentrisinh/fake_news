@@ -18,7 +18,7 @@ class NewsDetail(models.Model):
     details = models.TextField(null=True, blank=True)
     authors = models.CharField(max_length=255, null=True, blank=True)
     category = models.CharField(max_length=255, null=True, blank=True)
-    keywords = models.CharField(max_length=255, null=True, blank=True)
+    keywords = models.CharField(max_length=1000, null=True, blank=True)
     published_date = models.DateTimeField(null=True, blank=True)
 
     # status to know the news is real or spam
