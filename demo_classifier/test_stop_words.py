@@ -18,7 +18,7 @@ file_sign.close()
 file_stop_words.close()
 
 def preprocessor(text):
-    preprecessor_words = ViTokenizer.tokenize(text)
+    preprecessor_words = ViTokenizer.tokenize(text.lower())
     word_tokens = word_tokenize(preprecessor_words)
     filtered_sentence = [w for w in word_tokens if not w in stop_words]
     return filtered_sentence
