@@ -1,5 +1,7 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import string
+import re
 import nltk
 from pyvi import ViTokenizer, ViPosTagger
 nltk.download('punkt')
@@ -18,7 +20,16 @@ file_sign.close()
 file_stop_words.close()
 
 def preprocessor(text):
-    preprecessor_words = ViTokenizer.tokenize(text.lower())
+    removedSign = text
+    #
+    # regex = re.compile('[\n\r\t]*')
+    for i in list_sign:
+        removedSign = removedSign.replace(i,' ')
+    # removedSign = removedSign.translate(string.maketrans("\n\t\r", "   "))
+    # print(removedSign);
+    # removedSign = ' '.join(text.split())
+    preprecessor_words = ViTokenizer.tokenize(removedSign.lower())
+    # print(preprecessor_words)
     word_tokens = word_tokenize(preprecessor_words)
     filtered_sentence = [w for w in word_tokens if not w in stop_words]
     return filtered_sentence
