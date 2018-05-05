@@ -1,2 +1,2 @@
-from .custom_exception_handler import ApiCustomException
+from .custom_exception_handler import custom_exception_handler
 from .expiring_token_authentication import ExpiringTokenAuthentication

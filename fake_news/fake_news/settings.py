@@ -57,7 +57,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'fake_news.urls'
@@ -115,7 +114,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
 
     # Using your own custom ExceptionHandler
-    # 'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler',
+
+    # page size for paginate
+    'PAGE_SIZE': 10,
 }
 
 # Swagger Settings
