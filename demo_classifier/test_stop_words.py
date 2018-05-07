@@ -5,8 +5,8 @@ import re
 import nltk
 from pyvi import ViTokenizer, ViPosTagger
 nltk.download('punkt')
-file_stop_words = open('vietnamese-stopwords.txt',encoding="utf8");
-file_sign = open('sign.txt',encoding="utf8") ;
+file_stop_words = open('vietnamese-stopwords.txt', encoding="utf8")
+file_sign = open('sign.txt', encoding="utf8")
 # Doc file
 
 list_stop_words = file_stop_words.read()
