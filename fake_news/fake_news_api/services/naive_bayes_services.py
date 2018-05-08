@@ -3,6 +3,9 @@ import os
 from nltk.tokenize import word_tokenize
 from pyvi import ViTokenizer
 from django.conf import settings
+from numpy import *
+
+from crawler_engine.models import NewsDetail
 
 
 class NaiveBayesServices:
@@ -55,6 +58,13 @@ class NaiveBayesServices:
         return filtered_sentence
 
     def stop_word_list(self):
+        # list_details = list(NewsDetail.objects.filter(category='Thời sự').values_list('details', flat=True))
+        list_details = list(NewsDetail.objects.filter(category='Thời sự').values_list('title', flat=True))
+        # print(list_details)
+        print(asarray(list_details))
+        print(type(list_details))
         return self.stop_words, self.list_sign
+
+    # def query_
 
 
