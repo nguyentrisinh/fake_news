@@ -4,6 +4,7 @@ from django.conf.urls import url
 from rest_framework.exceptions import APIException
 from rest_framework import status
 import datetime
+import time
 
 from .api_base import ApiBase
 from ..services import NaiveBayesServices
@@ -22,6 +23,7 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
         urlpatterns = [
             url(r'stop_word_list/$', cls.as_view({'get': 'stop_word_list'})),
             url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
+            url(r'naive_bayes_classify_test/$', cls.as_view({'get': 'naive_bayes_classify_test'})),
         ]
 
         return urlpatterns
@@ -40,3 +42,15 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
         news_detail = request.data['details']
         news_preprocess_string = self.naive_bayes_services.preprocessor(news_detail)
         return self.as_success(news_preprocess_string)
+
+    def naive_bayes_classify_test(self, request, *args, **kwargs):
+        start_time = time.time()
+
+        list_train_data_set, db_train_labels, list_test_data_set, db_test_labels, train_matrix, test_matrix \
+            = self.naive_bayes_services.naive_bayes_classify_test()
+
+        elapsed_time = time.time() - start_time
+
+        print('The process take {} seconds'.format(str(elapsed_time)))
+
+        return self.as_success(test_matrix)

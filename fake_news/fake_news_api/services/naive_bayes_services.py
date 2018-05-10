@@ -4,6 +4,10 @@ from nltk.tokenize import word_tokenize
 from pyvi import ViTokenizer
 from django.conf import settings
 from numpy import *
+from django.db.models import Q
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.metrics import accuracy_score
+# import array
 
 from crawler_engine.models import NewsDetail
 
@@ -58,13 +62,111 @@ class NaiveBayesServices:
         return filtered_sentence
 
     def stop_word_list(self):
-        # list_details = list(NewsDetail.objects.filter(category='Thời sự').values_list('details', flat=True))
-        list_details = list(NewsDetail.objects.filter(category='Thời sự').values_list('title', flat=True))
-        # print(list_details)
-        print(asarray(list_details))
-        print(type(list_details))
+        # list_details = list(NewsDetail.objects.filter(Q(category='Thời sự') | Q(category='Giáo dục'))
+        #                     .values_list('category', flat=True))
+        # print(asarray(list_details))
+        # print(type(list_details))
         return self.stop_words, self.list_sign
 
-    # def query_
+    # This test is base on Liem db to test it structures
+    def naive_bayes_classify_test(self):
+        # ----------------- Training models -----------------------------
+        # Get all News exclude 10 first news
+        training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[10:]
+
+        # List details to train
+        db_train_data_set = asarray(list(training_news_query_set.values_list('details', flat=True)))
+
+        # preprocessor training data
+        list_train_data_set = [self.preprocessor(detail) for detail in db_train_data_set]
+
+        # List training label
+        db_train_labels = asarray(list(training_news_query_set.values_list('category', flat=True)))
+
+        # ---------------------------------------------------------------
+
+        # ----------------- Test models ---------------------------------
+        # get 10 first news to test naive bayes algorithm
+        test_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[:10]
+
+        # List details to test
+        db_test_data_set = asarray(list(test_news_query_set.values_list('details', flat=True)))
+
+        # preprocessor test data
+        list_test_data_set = [self.preprocessor(detail) for detail in db_test_data_set]
+
+        # List test label
+        db_test_labels = asarray(list(test_news_query_set.values_list('category', flat=True)))
+        # ---------------------------------------------------------------
+
+        # ---------------- Naive Bayes algorithm test -------------------
+        # get set of all words
+        list_words = self.create_vocabulary_list(list_train_data_set)
+
+        # Get training input for naive bayes algorithm
+
+        # change training data into array number
+        file = open(os.path.join(self.file_root, 'training.txt'), 'w')
+        train_matrix = []
+        for train_data_set in list_train_data_set:
+            file.write(' '.join(str(x) for x in self.set_of_words_to_vector(list_words, train_data_set)))
+            file.write('\n')
+            train_matrix.append(self.set_of_words_to_vector(list_words, train_data_set))
+
+        # create array of train_matrix
+        train_matrix = array(train_matrix)
+
+        # close file
+        file.close()
+        # End get training input for naive bayes algorithm
+
+        # Get test input for naive bayes algorithm
+
+        # change test data into array number
+        test_matrix = []
+        for test_data_set in list_test_data_set:
+            test_matrix.append(self.set_of_words_to_vector(list_words, test_data_set))
+
+        # End get test input for naive bayes algorithm
+
+        # Process Naive Bayes algorithm
+        # thuc hien thuat
+        clf = BernoulliNB()
+        clf.fit(train_matrix, db_train_labels)
+        y_predict = clf.predict(test_matrix)
+        print(y_predict)
+        # print(db_test_labels)
+        # print(test_matrix)
+        print('Training size = %d,accuracy = %.2f%%' % \
+              (train_matrix.shape[0], accuracy_score(db_test_labels, y_predict) * 100))
+        # End process Naive Bayes algorithm
+
+        # ---------------------------------------------------------------
+        return list_train_data_set, db_train_labels, list_test_data_set, db_test_labels, train_matrix, test_matrix
+
+    # Support function
+    @staticmethod
+    def create_vocabulary_list(data_set):
+        # create empty set
+        vocabulary_set = set([])
+
+        for document in data_set:
+            # union of the two sets
+            vocabulary_set = vocabulary_set | set(document)
+
+        return list(vocabulary_set)
+
+    @staticmethod
+    def set_of_words_to_vector(vocabulary_list, input_set):
+        return_vector = [0] * len(vocabulary_list)
+
+        for word in input_set:
+            if word in vocabulary_list:
+                return_vector[vocabulary_list.index(word)] = 1
+            else:
+                print("the word: %s is not in my Vocabulary!" % word)
+
+        return return_vector
+
 
 

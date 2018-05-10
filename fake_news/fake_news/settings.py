@@ -92,7 +92,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 
         # Name of the Database
-        'NAME': 'fake_news_db',
+        # 'NAME': 'fake_news_db',
+        'NAME': 'fake_news_db_test',
 
         # Username of the Postgres Db
         'USER': 'postgres',
