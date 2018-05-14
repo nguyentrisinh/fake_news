@@ -9,7 +9,8 @@ import time
 from .api_base import ApiBase
 from ..services import NaiveBayesServices
 
-from crawler_engine.serializers import BaseNewsDetailSerializer, DescriptionSerializer
+from crawler_engine.serializers import BaseNewsDetailSerializer, DescriptionSerializer, ListNewsDetailSerializer, \
+    PredictedResultSerializer
 
 
 # Create your views here.
@@ -24,6 +25,7 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
             url(r'stop_word_list/$', cls.as_view({'get': 'stop_word_list'})),
             url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
             url(r'naive_bayes_classify_test/$', cls.as_view({'get': 'naive_bayes_classify_test'})),
+            url(r'naive_bayes_classify/$', cls.as_view({'post': 'naive_bayes_classify'})),
         ]
 
         return urlpatterns
@@ -31,6 +33,9 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
     def get_serializer_class(self):
         if self.action == 'preprocessor':
             return DescriptionSerializer
+
+        if self.action == 'naive_bayes_classify':
+            return ListNewsDetailSerializer
 
         return BaseNewsDetailSerializer
 
@@ -54,3 +59,24 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
         print('The process take {} seconds'.format(str(elapsed_time)))
 
         return self.as_success(test_matrix)
+
+    def naive_bayes_classify(self, request, *args, **kwargs):
+        details = request.data['details']
+        data = request.data
+
+        # Process classify
+        start_time = time.time()
+        predicted_result = self.naive_bayes_services.naive_bayes_classify_api(details)
+        elapsed_time = time.time() - start_time
+
+        # return data
+        return_data = {
+            'predicted_result': predicted_result,
+            'elapsed_time': 'The process take {} seconds'.format(str(elapsed_time))
+        }
+
+        # return_data['predicted_result'] = self.naive_bayes_services.naive_bayes_classify_api(details)
+        serializer = PredictedResultSerializer(return_data)
+
+        # serializer = ListNewsDetailSerializer(request.data)
+        return self.as_success(serializer.data)

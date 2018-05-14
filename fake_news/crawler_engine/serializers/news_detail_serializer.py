@@ -14,3 +14,12 @@ class DescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsDetail
         fields = ('details',)
+
+
+class ListNewsDetailSerializer(serializers.Serializer):
+    details = serializers.ListField(child=serializers.CharField())
+
+
+class PredictedResultSerializer(serializers.Serializer):
+    predicted_result = serializers.ListField(child=serializers.CharField())
+    elapsed_time = serializers.CharField()
