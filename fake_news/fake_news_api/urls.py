@@ -1,8 +1,9 @@
 from django.conf.urls import url, include
 
-from .api import StartupViewSet, NaiveBayesViewSet
+from .api import StartupViewSet, NaiveBayesViewSet, SVMViewSet
 
 urlpatterns = [
     url(r'^startup/', include(StartupViewSet.get_router(), namespace='startup')),
-    url(r'^naive_bayes/', include(NaiveBayesViewSet.get_router(), namespace='naive bayes api'))
+    url(r'^naive_bayes/', include(NaiveBayesViewSet.get_router(), namespace='naive bayes api')),
+    url(r'^svm/', include(SVMViewSet.get_router(), namespace='svm api'))
 ]

@@ -23,7 +23,7 @@ class NaiveBayesServices:
 
     def __init__(self):
         # Download model for tokenize
-        # nltk.download('punkt') # Don't need
+        # nltk.download('punkt')  # Don't need
 
         # Open sign and vietnamese stop words
         file_stop_words = open(os.path.join(self.file_root, 'vietnamese-stopwords.txt'), encoding="utf8")
