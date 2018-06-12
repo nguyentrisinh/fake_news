@@ -44,7 +44,8 @@ class NaiveBayesServices:
         # ----------------- Training models -----------------------------
         # Get all News exclude 10 first news
         # training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[10:]
-        training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))
+        # training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))
+        training_news_query_set = NewsDetail.objects.filter()
 
         # List details to train
         db_train_data_set = asarray(list(training_news_query_set.values_list('details', flat=True)))
@@ -151,7 +152,8 @@ class NaiveBayesServices:
     def naive_bayes_classify_test(self):
         # ----------------- Training models -----------------------------
         # Get all News exclude 10 first news
-        training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[10:]
+        # training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[10:]
+        training_news_query_set = NewsDetail.objects.all()
 
         # List details to train
         db_train_data_set = asarray(list(training_news_query_set.values_list('details', flat=True)))
@@ -166,7 +168,8 @@ class NaiveBayesServices:
 
         # ----------------- Test models ---------------------------------
         # get 10 first news to test naive bayes algorithm
-        test_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[:10]
+        # test_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[:10]
+        test_news_query_set = NewsDetail.objects.all()[:200]
 
         # List details to test
         db_test_data_set = asarray(list(test_news_query_set.values_list('details', flat=True)))

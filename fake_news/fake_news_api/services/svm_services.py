@@ -72,7 +72,7 @@ class SVMServices:
 
     def get_test_data(self):
         # test_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))
-        test_news_query_set = NewsDetail.objects.filter()[:50]
+        test_news_query_set = NewsDetail.objects.filter()[:200]
 
         # List details to train
         db_test_data_set = asarray(list(test_news_query_set.values_list('details', flat=True)))
@@ -227,9 +227,9 @@ class SVMServices:
         predicted_svm = text_clf_svm.predict(list_test_data_set)
         # predicted_svm = text_clf_svm.predict(self.twenty_test.data)
 
-        print(numpy.mean(predicted_svm == db_test_labels))
-
         print(predicted_svm)
+        print('Training site = {training_site}'.format(training_site=len(list_train_data_set)))
+        print(numpy.mean(predicted_svm == db_test_labels))
 
         return 'test'
 
