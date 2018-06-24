@@ -1,5 +1,6 @@
 from scrapy.spider import CrawlSpider, Rule, BaseSpider
 from scrapy.selector import Selector, HtmlXPathSelector
+from unidecode import unidecode
 # from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from urllib.parse import urlparse
 from scrapy.linkextractors import LinkExtractor
@@ -24,10 +25,10 @@ class ThanhNienSpider(CrawlSpider):
     ]
     crawledLinks = []
     rules = (
-        Rule(LinkExtractor(allow='(%s)\/([\/\w-])*[0-9]*\.html$' % allowed_categories_re), callback="parse_item"),
-        # Rule(LinkExtractor(restrict_xpaths="//nav[@class='site-header__nav']//a"), follow=True),
+        Rule(LinkExtractor(allow='(%s)\/([\/\w-])*[0-9]*\.html$' % allowed_categories_re), callback="parse_item",follow=False),
+        Rule(LinkExtractor(restrict_xpaths="//nav[@class='site-header__nav']//a"), follow=True),
 
-        Rule(LinkExtractor(allow='(%s)((\/page\/[0-5].html$)|(/$)|$)' % allowed_categories_re), follow=True),
+        Rule(LinkExtractor(allow='(%s)((\/trang-([0-9]|([0-2][0-9])).html$))' % allowed_categories_re), follow=True, callback=None),
     )
 
     def check_already_crawled_url(self, response):
@@ -52,12 +53,11 @@ class ThanhNienSpider(CrawlSpider):
 
         item['url'] = response.url
 
-        item['title'] = ''.join(hxs.select('//h1[@class="details__headline"]/text()').extract()).strip() + '\n'
+        item['title'] = ''.join(hxs.select('//h1[@class="details__headline"]/text()').extract()).strip()
 
         top_img_url = ''
-        # if (hxs.select('//img[@class="storyavatar"]/@src')):
-        #     top_img_url = hxs.select('//img[@class="storyavatar"]/@src').extract()
-        # else:
+
+
         if (hxs.select('//div[@class="pswp-content__image"]//img')):
             top_img_url = hxs.select('//div[@class="pswp-content__image"]//img/@src')[0].extract()
         item['top_image_url'] = top_img_url
@@ -65,31 +65,19 @@ class ThanhNienSpider(CrawlSpider):
         item['details'] = ''.join(hxs.select('//div[@id="main_detail"]//div/text()').extract()).strip() + '\n'
 
         item['authors'] = ''.join(
-            hxs.select('//div[@class="details__author__meta" and position()=1]//text()').extract()).strip() + '\n'
+            hxs.select('//div[@class="details__author__meta" and position()=1]//text()').extract()).strip() +'\n'
 
-        item['category'] = ''.join(hxs.select('//meta[@property="article:section"]/@content').extract()).strip() + '\n'
+        item['category'] = unidecode(''.join(hxs.select('//meta[@property="article:section"]/@content').extract()).strip())
 
-        item['keywords'] = ''.join(hxs.select('//meta[@name="keywords"]/@content').extract()).strip() + '\n'
+        item['keywords'] = ''.join(hxs.select('//meta[@name="keywords"]/@content').extract()).strip()
 
         item['published_date'] = parser.parse(
-            ''.join(hxs.select('//meta[@itemprop="datePublished"]/@content').extract()).strip() + '\n')
+            ''.join(hxs.select('//meta[@itemprop="datePublished"]/@content').extract()).strip())
 
         item['status'] = 1
 
-        # item['crawled']= datetime.date.today()
-        #
-        # item['created_at'] = datetime.date.today()
-        #
-        # item['updated_at'] = datetime.date.today()
 
+        if not item['details'].strip():
+            return None
         return item
 
-        # def parse_page(self, response):
-        #     links = response.xpath('//article[@class="story"]/a/@href').extract()
-        #
-        #     crawledLinks = []
-        #     for link in links:
-        #         if link not in crawledLinks:
-        #             link = 'https://thanhnien.vn%s' % link
-        #             crawledLinks.append(link)
-        #             yield Request(link, self.parse_item)
