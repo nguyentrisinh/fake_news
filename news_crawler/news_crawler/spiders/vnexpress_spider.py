@@ -118,24 +118,24 @@ class VnExpressSpider(CrawlSpider):
         news_item['keywords'] = ''.join(hxs.xpath('//meta[@name="keywords"]/@content').extract()).strip()
 
         # --------------------- Get News' published date ---------------------
-        published_date = hxs.xpath('//span[@class="time left"]/text()').extract()
-
-        # Convert from string to date string with format DD/MM/YYYY
-        date = published_date[0]
-        date_start_index = date.index(',') + 2
-        date = date[date_start_index:]
-
-        # convert from string to time string with format %H:%M (HH:MM full 24h)
-        time = published_date[1]
-        time_end_index = time.index('GMT') - 1
-        time = time[:time_end_index]
-
-        # from date and time string merge into date time string (DD/MM/YYYY HH:MM)
-        date_time = '{} {}'.format(date, time)
-        # Parse from datetime string into DateTime object
-        published_date = dateutil.parser.parse(date_time, dayfirst=True)
-
-        news_item['published_date'] = published_date
+        # published_date = hxs.xpath('//span[@class="time left"]/text()').extract()
+        #
+        # # Convert from string to date string with format DD/MM/YYYY
+        # date = published_date[0]
+        # date_start_index = date.index(',') + 2
+        # date = date[date_start_index:]
+        #
+        # # convert from string to time string with format %H:%M (HH:MM full 24h)
+        # time = published_date[1]
+        # time_end_index = time.index('GMT') - 1
+        # time = time[:time_end_index]
+        #
+        # # from date and time string merge into date time string (DD/MM/YYYY HH:MM)
+        # date_time = '{} {}'.format(date, time)
+        # # Parse from datetime string into DateTime object
+        # published_date = dateutil.parser.parse(date_time, dayfirst=True)
+        #
+        # news_item['published_date'] = published_date
 
         # --------------------- Make News' status default ---------------------
         news_item['status'] = 1
