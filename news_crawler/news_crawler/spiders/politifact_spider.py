@@ -10,6 +10,8 @@ import datetime
 from dateutil import parser
 # from .items import NewsItem
 import scrapy
+import os
+
 from ..items import NewsDetailItem
 from crawler_engine.models import NewsDetail
 from .csv_helper import get_csv_file, get_specified_columns
@@ -18,6 +20,7 @@ MAX_PAGE = 10
 
 
 class PolitifactSpider(Spider):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     name = 'politifact'
     crawledLinks = []
     received = []
@@ -33,7 +36,7 @@ class PolitifactSpider(Spider):
 
     def start_requests(self):
         # data = get_csv_file('spiders/politifact.csv')
-        data = get_csv_file('spiders/politifact.csv')
+        data = get_csv_file(self.BASE_DIR + '/politifact.csv')
         urls = get_specified_columns(data, [0, 4])
 
         # with get_csv_file('spiders/politifact.csv', 'rt') as f:

@@ -10,6 +10,8 @@ import datetime
 from dateutil import parser
 # from .items import NewsItem
 import scrapy
+import os
+
 from ..items import NewsDetailItem
 from crawler_engine.models import NewsDetail
 from .csv_helper import get_csv_file,get_specified_columns
@@ -17,6 +19,8 @@ MAX_PAGE = 10
 
 
 class SnopesSpider(Spider):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
     name = 'snopes'
     crawledLinks = []
     received = []
@@ -31,7 +35,7 @@ class SnopesSpider(Spider):
         return True
 
     def start_requests(self):
-        data = get_csv_file('spiders/snopes.csv')
+        data = get_csv_file(self.BASE_DIR + '/snopes.csv')
         urls = get_specified_columns(data,[0,3])
 
         # with get_csv_file('spiders/politifact.csv', 'rt') as f:
@@ -98,7 +102,7 @@ class SnopesSpider(Spider):
         item['status'] = 1
 
         self.received.append(response.meta["step"])
-        print('received hihi',self.received)
+        print('received hihi', self.received)
 
         # if not item['details'].strip():
         #     return None
