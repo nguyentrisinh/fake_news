@@ -1,6 +1,9 @@
 # from ...crawler_engine.services import StartupCrawlerServices
-from crawler_engine.services import StartupCrawlerServices
 # import crawler_engine.services
+from ..constants import ErrorDefine
+from ..infrastructures import ApiCustomException
+
+from crawler_engine.services import StartupCrawlerServices
 
 
 class StartupServices:
@@ -14,4 +17,7 @@ class StartupServices:
     def simple_ping_from_other_app(self, data):
         ping = self.startup_crawler_services.simple_ping_from_different_app(data)
         return ping
+
+    def ping_error_message(self):
+        raise ApiCustomException(ErrorDefine.LOGIN_FAIL)
 

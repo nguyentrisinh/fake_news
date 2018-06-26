@@ -57,7 +57,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'fake_news.urls'
@@ -93,7 +92,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 
         # Name of the Database
-        'NAME': 'fake_news_db',
+        # 'NAME': 'fake_news_db',
+        'NAME': 'fake_news_db_test',
 
         # Username of the Postgres Db
         'USER': 'postgres',
@@ -115,7 +115,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
 
     # Using your own custom ExceptionHandler
-    # 'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'fake_news_api.utils.custom_exception_handler',
+
+    # page size for paginate
+    'PAGE_SIZE': 10,
 }
 
 # Swagger Settings

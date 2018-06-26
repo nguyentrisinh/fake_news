@@ -35,3 +35,4 @@ def custom_exception_handler(exc, context):
 
         response.data['errors'] = errors
     return response
+

@@ -10,7 +10,7 @@ import scrapy
 from scrapy_djangoitem import DjangoItem
 from scrapy.item import Field
 
-from crawler_engine.models import StartupModel, NewsDetail
+from crawler_engine.models import StartupModel, NewsDetail, FakeNewsTrainingModel
 
 
 class StartupModelItem(DjangoItem):
@@ -20,4 +20,8 @@ class StartupModelItem(DjangoItem):
 
 class NewsDetailItem(DjangoItem):
     django_model = NewsDetail
+
+
+class FakeNewsTrainingModelItem(DjangoItem):
+    django_model = FakeNewsTrainingModel
 
