@@ -16,8 +16,8 @@ from .csv_helper import get_csv_file,get_specified_columns
 MAX_PAGE = 10
 
 
-class PolitifactSpider(Spider):
-    name='snopes'
+class SnopesSpider(Spider):
+    name = 'snopes'
     crawledLinks = []
     received = []
 
@@ -48,7 +48,6 @@ class PolitifactSpider(Spider):
                 i+=1
                 print('step ',i)
                 yield scrapy.Request(url=url[0], callback=self.parse, meta={'label':1 if label == 'true'.upper() else 0,'step':i})
-
 
 
     def parse(self, response):

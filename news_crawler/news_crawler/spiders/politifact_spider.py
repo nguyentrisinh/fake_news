@@ -12,12 +12,13 @@ from dateutil import parser
 import scrapy
 from ..items import NewsDetailItem
 from crawler_engine.models import NewsDetail
-from .csv_helper import get_csv_file,get_specified_columns
+from .csv_helper import get_csv_file, get_specified_columns
+
 MAX_PAGE = 10
 
 
 class PolitifactSpider(Spider):
-    name='politifact'
+    name = 'politifact'
     crawledLinks = []
     received = []
 
@@ -31,8 +32,9 @@ class PolitifactSpider(Spider):
         return True
 
     def start_requests(self):
+        # data = get_csv_file('spiders/politifact.csv')
         data = get_csv_file('spiders/politifact.csv')
-        urls = get_specified_columns(data,[0,4])
+        urls = get_specified_columns(data, [0, 4])
 
         # with get_csv_file('spiders/politifact.csv', 'rt') as f:
         #     list = []
@@ -45,15 +47,17 @@ class PolitifactSpider(Spider):
         for url in urls:
             label = url[1].strip().upper()
             if label == 'true'.upper() or label == 'false'.upper():
-                i+=1
-                print('step ',i)
-                yield scrapy.Request(url=url[0], callback=self.parse, meta={'label':1 if label == 'true'.upper() else 0,'step':i})
-
-
+                i += 1
+                print('step ', i)
+                yield scrapy.Request(
+                    url=url[0],
+                    callback=self.parse, meta={'label': 1 if label == 'true'.upper() else 0, 'step': i}
+                )
 
     def parse(self, response):
-        if response.status !=200:
-            print('response error');
+        if response.status != 200:
+            print('response error')
+
         if not self.check_already_crawled_url(response):
             return None
         if response.url in self.crawledLinks:
@@ -63,7 +67,8 @@ class PolitifactSpider(Spider):
         hxs = Selector(response)
 
         item = NewsDetailItem()
-        # base_url, url, title, top_image_url, details, authors, category, keywords, published_date, status, crawled, created_at, updated_at
+        # base_url, url, title, top_image_url, details, authors, category,
+        # keywords, published_date, status, crawled, created_at, updated_at
         item['base_url'] = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(response.url))
 
         item['url'] = response.url
@@ -82,12 +87,10 @@ class PolitifactSpider(Spider):
         translator3 = Translator()
         details = ''.join(hxs.select('//div[@class="article__text"]//p/text()').extract()).strip() + '\n'
         details_list = details.split()
-
-
         range = int(len(details_list) / 3)
 
+        firstpartlist, secondpartlist, thirdpartlist = details_list[:range], details_list[range:range*2], details_list[range*2: len(details_list)]
 
-        firstpartlist, secondpartlist,thirdpartlist = details_list[:range], details_list[range:range*2],details_list[range*2: len(details_list)]
         translated_text1 = translator1.translate(' '.join(x for x in firstpartlist), dest='vi').text
         translated_text2 = translator2.translate(' '.join(x for x in firstpartlist), dest='vi').text
         translated_text3 = translator3.translate(' '.join(x for x in firstpartlist), dest='vi').text

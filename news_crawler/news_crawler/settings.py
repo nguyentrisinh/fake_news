@@ -100,7 +100,8 @@ ITEM_PIPELINES = {
 # Setting up django's project full path.
 DOWNLOAD_DELAY = 0.25
 # sys.path.insert(0, '/home/rolando/projects/myweb')
-FAKE_NEWS_ROOT = os.path.dirname(os.path.abspath('..'))
+# FAKE_NEWS_ROOT = os.path.dirname(os.path.abspath('..'))
+FAKE_NEWS_ROOT = os.path.dirname(os.path.abspath('.'))
 DJANGO_ROOT = os.path.join(FAKE_NEWS_ROOT, 'fake_news\\')
 print(DJANGO_ROOT)
 sys.path.append(DJANGO_ROOT)
