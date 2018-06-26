@@ -12,8 +12,8 @@ from dateutil import parser
 import scrapy
 import os
 
-from ..items import NewsDetailItem
-from crawler_engine.models import NewsDetail
+from ..items import NewsDetailItem, FakeNewsTrainingModelItem
+from crawler_engine.models import NewsDetail, FakeNewsTrainingModel
 from .csv_helper import get_csv_file, get_specified_columns
 
 MAX_PAGE = 10
@@ -27,7 +27,8 @@ class PolitifactSpider(Spider):
 
     def check_already_crawled_url(self, response):
         url = response.url
-        url_crawled_list = NewsDetail.objects.all().values_list('url', flat=True)
+        # url_crawled_list = NewsDetail.objects.all().values_list('url', flat=True)
+        url_crawled_list = FakeNewsTrainingModel.objects.all().values_list('url', flat=True)
         # if ()
         if url in url_crawled_list:
             return False
@@ -46,7 +47,7 @@ class PolitifactSpider(Spider):
         #         url = array[0]
         #         list.append(url)
         #     list.pop(0)
-        i=0
+        i = 0
         for url in urls:
             label = url[1].strip().upper()
             if label == 'true'.upper() or label == 'false'.upper():
@@ -54,7 +55,8 @@ class PolitifactSpider(Spider):
                 print('step ', i)
                 yield scrapy.Request(
                     url=url[0],
-                    callback=self.parse, meta={'label': 1 if label == 'true'.upper() else 0, 'step': i}
+                    callback=self.parse,
+                    meta={'label': 1 if label == 'true'.upper() else 2, 'step': i}
                 )
 
     def parse(self, response):
@@ -69,7 +71,7 @@ class PolitifactSpider(Spider):
 
         hxs = Selector(response)
 
-        item = NewsDetailItem()
+        item = FakeNewsTrainingModelItem()
         # base_url, url, title, top_image_url, details, authors, category,
         # keywords, published_date, status, crawled, created_at, updated_at
         item['base_url'] = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(response.url))
@@ -84,7 +86,7 @@ class PolitifactSpider(Spider):
 
         # if (hxs.select('//div[@class="pswp-content__image"]//img')):
         #     top_img_url = hxs.select('//div[@class="pswp-content__image"]//img/@src')[0].extract()
-        item['top_image_url'] = top_img_url
+        # item['top_image_url'] = top_img_url
         translator1 = Translator()
         translator2 = Translator()
         translator3 = Translator()
@@ -100,25 +102,25 @@ class PolitifactSpider(Spider):
         item['details'] = translated_text1 + ' ' + translated_text2+ ' '+translated_text3
         # item['details'] = ''.join(hxs.select('//div[@class="article__text"]//p/text()').extract()).strip() + '\n'
 
-        item['authors'] = ''
-            # ''.join(
-            # hxs.select('//div[@class="details__author__meta" and position()=1]//text()').extract()).strip() + '\n'
-
-        item['category'] = ''
-            # unidecode(
-            # ''.join(hxs.select('//meta[@property="article:section"]/@content').extract()).strip())
-
-        item['keywords'] =''
-            # ''.join(hxs.select('//meta[@name="keywords"]/@content').extract()).strip()
-
+        # item['authors'] = ''
+        #     # ''.join(
+        #     # hxs.select('//div[@class="details__author__meta" and position()=1]//text()').extract()).strip() + '\n'
+        #
+        # item['category'] = ''
+        #     # unidecode(
+        #     # ''.join(hxs.select('//meta[@property="article:section"]/@content').extract()).strip())
+        #
+        # item['keywords'] =''
+        #     # ''.join(hxs.select('//meta[@name="keywords"]/@content').extract()).strip()
+        #
         item['published_date'] = parser.parse('2018-06-24T06:00:00T+07:00')
             # parser.parse(
             # ''.join(hxs.select('//meta[@itemprop="datePublished"]/@content').extract()).strip())
-
-        item['status'] = 1
-
-        self.received.append(response.meta["step"])
-        print('received hihi',self.received)
+        #
+        item['status'] = response.meta.get('label')
+        #
+        # self.received.append(response.meta["step"])
+        # print('received hihi',self.received)
 
         if not item['details'].strip():
             return None

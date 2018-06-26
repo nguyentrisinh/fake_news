@@ -21,7 +21,7 @@ class NewsDetail(models.Model):
     keywords = models.CharField(max_length=1000, null=True, blank=True)
     published_date = models.DateTimeField(null=True, blank=True)
 
-    # status to know the news is real or spam
+    # status to know the news is real or fake
     status = models.PositiveSmallIntegerField(choices=NEWS_STATUS, default=1)
 
     # property for management (Don't need to init)
