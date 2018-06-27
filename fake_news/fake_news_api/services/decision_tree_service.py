@@ -1,5 +1,6 @@
 import nltk
 import os
+import pandas as pd
 from nltk.tokenize import word_tokenize
 from pyvi import ViTokenizer
 from django.conf import settings
@@ -9,13 +10,19 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 # import array
 
-from crawler_engine.models import NewsDetail
+from crawler_engine.models import NewsDetail, FakeNewsTrainingModel
 
 
 class DecisionTreeServices:
     # get base_dir
     base_dir = settings.BASE_DIR
     file_root = os.path.join(base_dir, 'fake_news_api/assets')
+
+    # decision tree resources
+    decision_tree_resource_root = os.path.join(file_root, 'decision_tree_resources')
+    training_matrix = 'fake_news_training_matrix.csv'
+    list_word_csv = 'fake_news_list_word.csv'
+    training_label = 'fake_news_training_label.csv'
 
     # initialize empty objects
     stop_words = []
@@ -58,6 +65,20 @@ class DecisionTreeServices:
         # ---------------------------------------------------------------
 
         return list_train_data_set, db_train_labels
+
+    def get_fake_news_training_data(self):
+        fake_news_training_queryset = FakeNewsTrainingModel.objects.filter()
+
+        # List details to train
+        fake_news_training_details = asarray(list(fake_news_training_queryset.values_list('details', flat=True)))
+
+        # preprocessor training data
+        fake_news_training_data_set = [self.preprocessor(detail) for detail in fake_news_training_details]
+
+        # List training label
+        fake_news_training_labels = asarray(list(fake_news_training_queryset.values_list('status', flat=True)))
+
+        return fake_news_training_data_set, fake_news_training_labels
 
     def get_list_words(self, list_train_data_set):
         # get set of all words
@@ -116,6 +137,22 @@ class DecisionTreeServices:
         print(y_predict)
 
         return y_predict
+
+    def fake_news_classify(self, details):
+        # Get training data
+        training_matrix, list_words, training_label = self.load_preprocessor_data()
+
+        # Get matrix of news details that need to predicted classify
+        predict_matrix = self.get_predict_processed_matrix(list_words, details)
+
+        # Process Decision Tree algorithm
+        clf = DecisionTreeClassifier()
+        clf.fit(training_matrix, training_label)
+        y_predict = clf.predict(predict_matrix)
+        print(y_predict)
+
+        return y_predict
+
     # ---------------------- End function for Decision Tree Api -------------------------
 
     def preprocessor(self, description):
@@ -245,6 +282,125 @@ class DecisionTreeServices:
                 print("the word: %s is not in my Vocabulary!" % word)
 
         return return_vector
+
+    # ----------------------------------------- Save to file ----------------------------------------------
+    def save_preprocessor_to_file(self):
+        # Get training data
+        list_train_data_set, db_train_labels = self.get_fake_news_training_data()
+
+        # Get list words
+        list_words = self.get_list_words(list_train_data_set)
+
+        # Get and save training matrix to txt file
+        train_matrix = self.save_training_matrix_to_file(list_words, list_train_data_set)
+
+        # Save list words to csv
+        self.save_list_words_to_csv(list_words)
+
+        # Save training label to csv
+        self.save_list_label_to_csv(db_train_labels)
+
+    # Save training matrix to txt file
+    def save_training_matrix_to_file(self, list_words, list_train_data_set):
+        # Get training input for naive bayes algorithm
+
+        # change training data into array number
+        file = open(os.path.join(self.decision_tree_resource_root, self.training_matrix), 'w')
+        train_matrix = []
+        for train_data_set in list_train_data_set:
+            file.write(' '.join(str(x) for x in self.set_of_words_to_vector(list_words, train_data_set)))
+            file.write('\n')
+            train_matrix.append(self.set_of_words_to_vector(list_words, train_data_set))
+
+        # create array of train_matrix
+        train_matrix = array(train_matrix)
+
+        # close file
+        file.close()
+        # End get training input for naive bayes algorithm
+
+        return train_matrix
+
+    # Save list words
+    def save_list_words_to_csv(self, list_words):
+        data = {
+            'list words': list_words,
+        }
+
+        # pandas dataframe
+        pandas_dataframe = pd.DataFrame(data=data)
+        pandas_dataframe.to_csv(self.decision_tree_resource_root + '/' + self.list_word_csv, encoding='utf-8')
+
+        return 'success'
+
+    # Save list label
+    def save_list_label_to_csv(self, db_train_labels):
+        data = {
+            'status': db_train_labels
+        }
+
+        # pandas dataframe
+        pandas_dataframe = pd.DataFrame(data=data)
+        pandas_dataframe.to_csv(self.decision_tree_resource_root + '/' + self.training_label, encoding='utf-8')
+
+        return 'success'
+    # ----------------------------------------- End save to file ----------------------------------------------
+
+    # ----------------------------------------- Load from file ----------------------------------------------
+    def load_preprocessor_data(self):
+        training_matrix = self.load_training_matrix_from_file()
+
+        list_words = self.load_list_word_from_file(os.path.join(self.decision_tree_resource_root, self.list_word_csv))
+
+        training_label = self.load_training_label_from_file(
+            os.path.join(
+                self.decision_tree_resource_root,
+                self.training_label
+            )
+        )
+
+        return training_matrix, list_words, training_label
+
+    def load_training_matrix_from_file(self):
+        file = open(os.path.join(self.decision_tree_resource_root, self.training_matrix), 'r')
+
+        training_matrix = []
+
+        line = file.readline()
+        while line:
+            string_array = line.split(' ')
+
+            # Make list string into list int
+            result = list(map(int, string_array))
+
+            # add result to main array
+            training_matrix.append(result)
+
+            # Continue to next line
+            line = file.readline()
+
+        return training_matrix
+
+    def load_list_word_from_file(self, path):
+        pandas_dataframe = pd.read_csv(path, header=None, encoding='utf-8')
+
+        list_words = pandas_dataframe[1].astype(str).tolist()
+
+        del list_words[0]
+
+        return list_words
+
+    def load_training_label_from_file(self, path):
+        pandas_dataframe = pd.read_csv(path, header=None, encoding='utf-8')
+
+        training_label = pandas_dataframe[1].tolist()
+
+        del training_label[0]
+        print(type(training_label[0]))
+
+        return training_label
+
+    # ----------------------------------------- End load from file ----------------------------------------------
 
 
 

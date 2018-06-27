@@ -18,7 +18,7 @@ class NaiveBayesServices:
     base_dir = settings.BASE_DIR
     file_root = os.path.join(base_dir, 'fake_news_api/assets')
 
-    # svm resources
+    # naive bayes resources
     naive_bayes_resource_root = os.path.join(file_root, 'naive_bayes_resources')
     training_matrix = 'fake_news_training_matrix.csv'
     list_word_csv = 'fake_news_list_word.csv'
