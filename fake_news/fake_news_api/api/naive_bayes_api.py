@@ -10,7 +10,7 @@ from .api_base import ApiBase
 from ..services import NaiveBayesServices
 
 from crawler_engine.serializers import BaseNewsDetailSerializer, DescriptionSerializer, ListNewsDetailSerializer, \
-    PredictedResultSerializer
+    PredictedResultSerializer, FakeNewsPredictedResultSerializer
 
 
 # Create your views here.
@@ -26,6 +26,9 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
             url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
             url(r'naive_bayes_classify_test/$', cls.as_view({'get': 'naive_bayes_classify_test'})),
             url(r'naive_bayes_classify/$', cls.as_view({'post': 'naive_bayes_classify'})),
+            url(r'fake_news_classify/$', cls.as_view({'post': 'fake_news_classify'})),
+            # Save preprocessor to file
+            url(r'save_preprocessor_to_file/$', cls.as_view({'get': 'save_preprocessor_to_file'})),
         ]
 
         return urlpatterns
@@ -35,6 +38,9 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
             return DescriptionSerializer
 
         if self.action == 'naive_bayes_classify':
+            return ListNewsDetailSerializer
+
+        if self.action == 'fake_news_classify':
             return ListNewsDetailSerializer
 
         return BaseNewsDetailSerializer
@@ -80,3 +86,26 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
 
         # serializer = ListNewsDetailSerializer(request.data)
         return self.as_success(serializer.data)
+
+    def fake_news_classify(self, request, *args, **kwargs):
+        details = request.data['details']
+
+        # Process classify
+        start_time = time.time()
+        predicted_result = self.naive_bayes_services.fake_news_classify(details)
+        elapsed_time = time.time() - start_time
+
+        # return data
+        return_data = {
+            'predicted_result': predicted_result,
+            'elapsed_time': 'The process take {} seconds'.format(str(elapsed_time))
+        }
+
+        serializer = FakeNewsPredictedResultSerializer(return_data)
+
+        return self.as_success(serializer.data)
+
+    def save_preprocessor_to_file(self, request, *args, **kwargs):
+        self.naive_bayes_services.save_preprocessor_to_file()
+
+        return self.as_success('success')
