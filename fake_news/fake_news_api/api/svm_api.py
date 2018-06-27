@@ -9,7 +9,7 @@ import time
 from .api_base import ApiBase
 from ..services import SVMServices
 from crawler_engine.serializers import BaseNewsDetailSerializer, DescriptionSerializer, ListNewsDetailSerializer, \
-    PredictedResultSerializer
+    PredictedResultSerializer, FakeNewsPredictedResultSerializer
 
 # Create your views here.
 class SVMViewSet(ModelViewSet, ApiBase):
@@ -25,12 +25,18 @@ class SVMViewSet(ModelViewSet, ApiBase):
             url(r'test_pipeline/$', cls.as_view({'get': 'test_pipeline'})),
             url(r'test_pipeline_real_classify/$', cls.as_view({'get': 'test_pipeline_real_classify'})),
             url(r'svm_classify/$', cls.as_view({'post': 'svm_classify'})),
+            url(r'fake_news_classify/$', cls.as_view({'post': 'fake_news_classify'})),
+            # Preprocessor and save csv file of fake news training data
+            url(r'save_preprocessor_to_csv/$', cls.as_view({'get': 'save_preprocessor_to_csv'})),
         ]
 
         return urlpatterns
 
     def get_serializer_class(self):
         if self.action == 'svm_classify':
+            return ListNewsDetailSerializer
+
+        if self.action == 'fake_news_classify':
             return ListNewsDetailSerializer
 
         return BaseNewsDetailSerializer
@@ -74,3 +80,28 @@ class SVMViewSet(ModelViewSet, ApiBase):
 
         # serializer = ListNewsDetailSerializer(request.data)
         return self.as_success(serializer.data)
+
+    def fake_news_classify(self, request, *args, **kwargs):
+        details = request.data['details']
+
+        # Process classify
+        start_time = time.time()
+        predicted_result = self.svm_services.fake_news_pipeline_svm_classify(details)
+        elapsed_time = time.time() - start_time
+
+        # return data
+        return_data = {
+            'predicted_result': predicted_result,
+            'elapsed_time': 'The process take {} seconds'.format(str(elapsed_time))
+        }
+
+        # return_data['predicted_result'] = self.naive_bayes_services.naive_bayes_classify_api(details)
+        serializer = FakeNewsPredictedResultSerializer(return_data)
+
+        # serializer = ListNewsDetailSerializer(request.data)
+        return self.as_success(serializer.data)
+
+    def save_preprocessor_to_csv(self, request, *args, **kwargs):
+        status = self.svm_services.write_preprocessor_to_csv()
+
+        return self.as_success(status)

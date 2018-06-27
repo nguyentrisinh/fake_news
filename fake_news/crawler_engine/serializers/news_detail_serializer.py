@@ -23,3 +23,8 @@ class ListNewsDetailSerializer(serializers.Serializer):
 class PredictedResultSerializer(serializers.Serializer):
     predicted_result = serializers.ListField(child=serializers.CharField())
     elapsed_time = serializers.CharField()
+
+
+class FakeNewsPredictedResultSerializer(serializers.Serializer):
+    predicted_result = serializers.ListField(child=serializers.IntegerField())
+    elapsed_time = serializers.CharField()

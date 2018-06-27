@@ -1,6 +1,6 @@
 import os
-import nltk
 import numpy
+import pandas as pd
 from django.conf import settings
 from sklearn import svm
 from nltk.tokenize import word_tokenize
@@ -10,10 +10,10 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
-from django.db.models import Q
+# from django.db.models import Q
 from numpy import *
 
-from crawler_engine.models import NewsDetail
+from crawler_engine.models import NewsDetail, FakeNewsTrainingModel
 
 
 class SVMServices:
@@ -22,6 +22,10 @@ class SVMServices:
     # get base_dir
     base_dir = settings.BASE_DIR
     file_root = os.path.join(base_dir, 'fake_news_api/assets')
+
+    # svm resources
+    svm_resource_root = os.path.join(file_root, 'svm_resources')
+    training_data_csv = 'svm_dataset.csv'
 
     # Example for dataset
     twenty_train = fetch_20newsgroups(subset='train', shuffle=True)
@@ -49,7 +53,8 @@ class SVMServices:
         file_sign.close()
         file_stop_words.close()
 
-    def get_training_data(self):
+    # Get Training data
+    def get_news_classify_training_data(self):
         # ----------------- Training models -----------------------------
         # Get all News exclude 10 first news
         # training_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))[10:]
@@ -70,7 +75,22 @@ class SVMServices:
 
         return list_train_data_set, db_train_labels
 
-    def get_test_data(self):
+    def get_fake_news_training_data(self):
+        fake_news_training_queryset = FakeNewsTrainingModel.objects.filter()
+
+        # List details to train
+        fake_news_training_details = asarray(list(fake_news_training_queryset.values_list('details', flat=True)))
+
+        # preprocessor training data
+        fake_news_training_data_set = [self.preprocessor(detail) for detail in fake_news_training_details]
+
+        # List training label
+        fake_news_training_labels = asarray(list(fake_news_training_queryset.values_list('status', flat=True)))
+
+        return fake_news_training_data_set, fake_news_training_labels
+
+    # Get Test data
+    def get_news_classify_test_data(self):
         # test_news_query_set = NewsDetail.objects.filter(Q(category='Chinh tri') | Q(category='Suc khoe'))
         test_news_query_set = NewsDetail.objects.filter()[:200]
 
@@ -211,9 +231,9 @@ class SVMServices:
         return 'test'
 
     def test_pipeline_real_classify(self):
-        list_train_data_set, db_train_labels = self.get_training_data()
+        list_train_data_set, db_train_labels = self.get_news_classify_training_data()
 
-        list_test_data_set, db_test_labels = self.get_test_data()
+        list_test_data_set, db_test_labels = self.get_news_classify_test_data()
 
         # train_preprocessor_tuple = tuple(train_preprocessor_array)
 
@@ -234,7 +254,7 @@ class SVMServices:
         return 'test'
 
     def pipeline_svm_classify(self, news_details):
-        list_train_data_set, db_train_labels = self.get_training_data()
+        list_train_data_set, db_train_labels = self.get_news_classify_training_data()
 
         predict_dataset = [self.preprocessor(detail) for detail in news_details]
 
@@ -250,3 +270,53 @@ class SVMServices:
         print(predicted_svm)
 
         return predicted_svm
+
+    # Fake news classify
+    def fake_news_pipeline_svm_classify(self, news_details):
+        list_train_data_set, db_train_labels = self.load_from_csv(self.svm_resource_root + '/' + self.training_data_csv)
+        # list_train_data_set, db_train_labels = self.get_fake_news_training_data()
+
+        predict_dataset = [self.preprocessor(detail) for detail in news_details]
+
+        text_clf_svm = Pipeline([('vect', CountVectorizer()),
+                                 ('tfidf', TfidfTransformer()),
+                                 ('clf-svm', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, n_iter=5,
+                                                           random_state=42))
+                                 ])
+
+        _ = text_clf_svm.fit(list_train_data_set, db_train_labels)
+
+        predicted_svm = text_clf_svm.predict(predict_dataset)
+        print(predicted_svm)
+
+        return predicted_svm
+
+    # Save preprocessor into csv file
+    def write_preprocessor_to_csv(self):
+        list_train_data_set, db_train_labels = self.get_fake_news_training_data()
+
+        data = {
+            'details': list_train_data_set,
+            'status': db_train_labels
+        }
+
+        # pandas dataframe
+        pandas_dataframe = pd.DataFrame(data=data)
+        pandas_dataframe.to_csv(self.svm_resource_root + '/' + self.training_data_csv, encoding='utf-8')
+
+        return 'success'
+
+    def load_from_csv(self, path):
+        pandas_dataframe = pd.read_csv(path, header=None, encoding='utf-8')
+
+        fake_news_training_model = pandas_dataframe[1].astype(str).tolist()
+
+        fake_news_labels = pandas_dataframe[2].tolist()
+
+        del fake_news_labels[0]
+
+        del fake_news_training_model[0]
+
+        return fake_news_training_model, fake_news_labels
+
+
