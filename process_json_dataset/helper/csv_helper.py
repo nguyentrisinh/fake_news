@@ -14,6 +14,8 @@ def get_csv_file(filename):
     return df_content
 
 def get_specified_columns(data,array):
+    if array==None:
+        return data
     new_array = data[:, [x for x in range(data.shape[1]) if (x in array)]]
     return new_array
 

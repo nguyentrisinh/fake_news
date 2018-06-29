@@ -3,12 +3,13 @@ import os
 from googletrans import Translator
 from dateutil import parser
 from helper.db import Connection
+from helper.divide_helper import divide_trans
 
 dataset_dir = 'Data'
 subdataset_dir = 'Politifact'
 real_dir = 'RealNewsContent'
 fake_dir = 'FakeNewsContent'
-label = 1
+label = 2
 
 
 def process_json():
@@ -42,25 +43,9 @@ def process_json():
         #     item['top_image_url'] = ''
             # print(filename)
 
-        try:
-            translator1 = Translator()
-            translator2 = Translator()
-            translator3 = Translator()
-            details = data['text']
-            details_list = details.split()
+        item['details'] = divide_trans(data['text'],10)
 
-            range = int(len(details_list) / 3)
-
-            firstpartlist, secondpartlist, thirdpartlist = details_list[:range], details_list[range:range * 2], details_list[
-                                                                                                                range * 2: len(
-                                                                                                                    details_list)]
-            translated_text1 = translator1.translate(' '.join(x for x in firstpartlist), dest='vi').text
-            translated_text2 = translator2.translate(' '.join(x for x in firstpartlist), dest='vi').text
-            translated_text3 = translator3.translate(' '.join(x for x in firstpartlist), dest='vi').text
-            item['details'] = translated_text1 + ' ' + translated_text2 + ' ' + translated_text3
-
-        except:
-            item['details'] = ''
+        item['authors'] = ''
 
         # try:
         #     item['authors'] = ' '.join(x for x in data['authors'])
