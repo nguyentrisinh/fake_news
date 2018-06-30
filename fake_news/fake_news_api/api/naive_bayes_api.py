@@ -118,7 +118,6 @@ class NaiveBayesViewSet(ModelViewSet, ApiBase):
         elapsed_time = time.time() - start_time
 
         # return data
-        # return data
         return_data = {
             'result': 'The accuracy is {}%'.format(accuracy_result),
             'elapsed_time': 'The process take {} seconds'.format(str(elapsed_time))
