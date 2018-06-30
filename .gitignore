@@ -100,3 +100,6 @@ ENV/
 
 # idea
 \.idea/
+
+# fake.csv
+process_json_dataset/dataset/fake/
