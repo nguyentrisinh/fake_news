@@ -10,25 +10,30 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.metrics import accuracy_score
 # import array
 
+from .base_service import BaseService
 from crawler_engine.models import NewsDetail, FakeNewsTrainingModel
 
 
-class NaiveBayesServices:
+class NaiveBayesServices(BaseService):
     # get base_dir
     base_dir = settings.BASE_DIR
     file_root = os.path.join(base_dir, 'fake_news_api/assets')
 
     # naive bayes resources
     naive_bayes_resource_root = os.path.join(file_root, 'naive_bayes_resources')
-    training_matrix = 'fake_news_training_matrix.csv'
-    list_word_csv = 'fake_news_list_word.csv'
-    training_label = 'fake_news_training_label.csv'
+    # training_matrix = 'fake_news_training_matrix.csv'
+    # list_word_csv = 'fake_news_list_word.csv'
+    # training_label = 'fake_news_training_label.csv'
+    training_matrix = 'fake_news_training_matrix_1.csv'
+    list_word_csv = 'fake_news_list_word_1.csv'
+    training_label = 'fake_news_training_label_1.csv'
 
     # initialize empty objects
     stop_words = []
     list_sign = ''
 
     def __init__(self):
+        super(NaiveBayesServices, self).__init__()
         # Download model for tokenize
         # nltk.download('punkt')  # Don't need
 
@@ -153,6 +158,26 @@ class NaiveBayesServices:
         print(y_predict)
 
         return y_predict
+
+    def fake_news_validate_accuracy(self):
+        # Get training data
+        training_matrix, list_words, training_label = self.load_preprocessor_data()
+
+        # Get validate data
+        fake_news_validate_model, fake_news_validate_labels = self.load_validate_data()
+
+        # get fake_news_validate_model matrix
+        fake_news_validate_matrix = self.get_predict_processed_matrix(list_words, fake_news_validate_model)
+
+        # Process Naive Bayes algorithm
+        clf = BernoulliNB()
+        clf.fit(training_matrix, training_label)
+        y_predict = clf.predict(fake_news_validate_matrix)
+
+        # print accuracy result
+        accuracy = self.return_result(y_predict, fake_news_validate_labels)
+
+        return accuracy
     # ---------------------- End function for Naive Bayes Api -------------------------
 
     def preprocessor(self, description):
@@ -394,7 +419,8 @@ class NaiveBayesServices:
         training_label = pandas_dataframe[1].tolist()
 
         del training_label[0]
-        print(type(training_label[0]))
+
+        training_label = list(map(int, training_label))
 
         return training_label
 

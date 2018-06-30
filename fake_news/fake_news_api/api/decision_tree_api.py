@@ -8,7 +8,7 @@ import time
 
 from .api_base import ApiBase
 from ..services import DecisionTreeServices
-
+from ..serializers import AccuracySerializer
 from crawler_engine.serializers import BaseNewsDetailSerializer, DescriptionSerializer, ListNewsDetailSerializer, \
     PredictedResultSerializer, FakeNewsPredictedResultSerializer
 
@@ -25,6 +25,7 @@ class DecisionTreeViewSet(ModelViewSet, ApiBase):
             url(r'stop_word_list/$', cls.as_view({'get': 'stop_word_list'})),
             url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
             url(r'decision_tree_classify_test/$', cls.as_view({'get': 'decision_tree_classify_test'})),
+            url(r'accuracy_validate/$', cls.as_view({'get': 'accuracy_validate'})),
             url(r'decision_tree_classify/$', cls.as_view({'post': 'decision_tree_classify'})),
             url(r'fake_news_classify/$', cls.as_view({'post': 'fake_news_classify'})),
             # Save preprocessor to file
@@ -109,3 +110,20 @@ class DecisionTreeViewSet(ModelViewSet, ApiBase):
         self.decision_tree_services.save_preprocessor_to_file()
 
         return self.as_success('success')
+
+    def accuracy_validate(self, request, *args, **kwargs):
+        # Process classify
+        start_time = time.time()
+        accuracy_result = self.decision_tree_services.fake_news_validate_accuracy()
+        elapsed_time = time.time() - start_time
+
+        # return data
+        # return data
+        return_data = {
+            'result': 'The accuracy is {}%'.format(accuracy_result),
+            'elapsed_time': 'The process take {} seconds'.format(str(elapsed_time))
+        }
+
+        serializer = AccuracySerializer(return_data)
+
+        return self.as_success(serializer.data)

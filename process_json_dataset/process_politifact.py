@@ -6,14 +6,15 @@ from helper.db import Connection
 from helper.divide_helper import divide_trans
 
 dataset_dir = 'Data'
-subdataset_dir = 'Politifact'
+# subdataset_dir = 'Politifact'
+subdataset_dir = 'BuzzFeed'
 real_dir = 'RealNewsContent'
 fake_dir = 'FakeNewsContent'
-label = 2
+label = 1
 
 
 def process_json():
-    #Cho nay truyen fake_dir thi label chinh lai =0, neu truyen real dir thi label =1
+    #Cho nay truyen fake_dir thi label chinh lai =2, neu truyen real dir thi label =1
     file_dir = 'dataset/%s/%s/%s' % (dataset_dir, subdataset_dir, real_dir)
     directory = os.fsencode(file_dir)
     for file in os.listdir(directory):
@@ -43,7 +44,8 @@ def process_json():
         #     item['top_image_url'] = ''
             # print(filename)
 
-        item['details'] = divide_trans(data['text'],10)
+        # item['details'] = divide_trans(data['text'], 10)
+        item['details'] = divide_trans(data['text'], 3)
 
         item['authors'] = ''
 

@@ -1,3 +1,6 @@
+from ..constants import NEWS_STATUS
+
+
 class StartupCrawlerServices:
     def __init__(self):
         pass

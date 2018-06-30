@@ -7,16 +7,16 @@ from nltk.tokenize import word_tokenize
 from pyvi import ViTokenizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.datasets import fetch_20newsgroups
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 # from django.db.models import Q
 from numpy import *
 
 from crawler_engine.models import NewsDetail, FakeNewsTrainingModel
+from .base_service import BaseService
 
 
-class SVMServices:
+class SVMServices(BaseService):
     # Test training data
 
     # get base_dir
@@ -25,17 +25,15 @@ class SVMServices:
 
     # svm resources
     svm_resource_root = os.path.join(file_root, 'svm_resources')
-    training_data_csv = 'svm_dataset.csv'
-
-    # Example for dataset
-    twenty_train = fetch_20newsgroups(subset='train', shuffle=True)
-    twenty_test = fetch_20newsgroups(subset='test', shuffle=True)
+    training_data_csv = 'svm_dataset_1.csv'
 
     # initialize empty objects
     stop_words = []
     list_sign = ''
 
     def __init__(self):
+        super(SVMServices, self).__init__()
+
         # Download model for tokenize
         # nltk.download('punkt')  # Don't need
 
@@ -202,34 +200,6 @@ class SVMServices:
 
         return 'test'
 
-    def test_pipeline(self):
-        train_set = ('Đây là một đoạn text mẫu', 'bầu trời thì màu xanh', 'mặt trời thì sáng, bầu trời trong xanh. '
-                                                                          'bầu trời', 'trường mẫu giáo rất vui')
-
-        train_preprocessor_array = list()
-
-        for text in train_set:
-            text = self.preprocessor(text)
-            train_preprocessor_array.append(text)
-
-        # train_preprocessor_tuple = tuple(train_preprocessor_array)
-
-        text_clf_svm = Pipeline([('vect', CountVectorizer()),
-                                 ('tfidf', TfidfTransformer()),
-                                 ('clf-svm', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, n_iter=5,
-                                                           random_state=42))
-                                 ])
-
-        _ = text_clf_svm.fit(self.twenty_train.data, self.twenty_train.target)
-        predicted_svm = text_clf_svm.predict(train_preprocessor_array)
-        # predicted_svm = text_clf_svm.predict(self.twenty_test.data)
-        print(type(self.twenty_train.data))
-        print(predicted_svm)
-
-        # print(numpy.mean(predicted_svm == self.twenty_test.target))
-
-        return 'test'
-
     def test_pipeline_real_classify(self):
         list_train_data_set, db_train_labels = self.get_news_classify_training_data()
 
@@ -291,6 +261,34 @@ class SVMServices:
 
         return predicted_svm
 
+    # Accuracy result
+    def fake_news_validate_accuracy(self):
+        # Get training data
+        list_train_data_set, db_train_labels = self.load_from_csv(self.svm_resource_root + '/' + self.training_data_csv)
+
+        # Get validate data
+        fake_news_validate_model, fake_news_validate_labels = self.load_validate_data()
+
+        # Preprocessor fake_news_validate_model
+        fake_news_validate_data = [self.preprocessor(detail) for detail in fake_news_validate_model]
+
+        # Define classify algorithm
+        text_clf_svm = Pipeline([('vect', CountVectorizer()),
+                                 ('tfidf', TfidfTransformer()),
+                                 ('clf-svm', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, n_iter=5,
+                                                           random_state=42))
+                                 ])
+
+        _ = text_clf_svm.fit(list_train_data_set, db_train_labels)
+
+        # Predict result
+        predicted_svm = text_clf_svm.predict(fake_news_validate_data)
+
+        # print accuracy result
+        accuracy = self.return_result(predicted_svm, fake_news_validate_labels, list_train_data_set)
+
+        return accuracy
+
     # Save preprocessor into csv file
     def write_preprocessor_to_csv(self):
         list_train_data_set, db_train_labels = self.get_fake_news_training_data()
@@ -311,11 +309,14 @@ class SVMServices:
 
         fake_news_training_model = pandas_dataframe[1].astype(str).tolist()
 
+        # fake_news_labels = pandas_dataframe[2].tolist()
         fake_news_labels = pandas_dataframe[2].tolist()
 
         del fake_news_labels[0]
 
         del fake_news_training_model[0]
+
+        fake_news_labels = list(map(int, fake_news_labels))
 
         return fake_news_training_model, fake_news_labels
 
