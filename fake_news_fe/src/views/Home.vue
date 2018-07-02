@@ -10,10 +10,19 @@
       <div class="col-6">
         <form action="">
           <div class="row">
-            <div class="form-group col-8">
+            <div class="form-group col-4">
               <label for="type">Chọn phương pháp</label>
-              <select v-model="selected" id="type" class="form-control">
+              <select v-on:change="resetFetch" v-model="selected" id="type" class="form-control">
                 <option v-for="option in options" v-bind:value="option.value">
+                  {{ option.text }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group col-4">
+              <label for="type">Chọn cách kiểm định</label>
+              <select v-on:change="resetFetch" v-model="typeSelected" class="form-control">
+                <option v-for="option in optionsType" v-bind:value="option.value">
                   {{ option.text }}
                 </option>
               </select>
@@ -21,7 +30,8 @@
             <div class="text-center col-4">
               <div class="form-group">
                 <label for="">&nbsp;</label>
-                <button v-on:click="fetchClassify" type="submit" class="form-control btn btn-primary mb-3 bg-purple">Kiểm định &nbsp;<i
+                <button v-on:click="fetchClassify" type="submit" class="form-control btn btn-primary mb-3 bg-purple">
+                  Kiểm định &nbsp;<i
                   class="zmdi zmdi-chevron-right"></i></button>
               </div>
 
@@ -46,20 +56,33 @@
           </div>
         </div>
         <div v-else>
-          <label for="" > Kết quả kiểm định</label>
+          <label for=""> Kết quả kiểm định</label>
           <ul class="list-group position-relative">
-            <li class="media align-items-center list-group-item"
-                v-bind:class="{'list-group-item-danger':result[index]===2,'list-group-item-success':result[index]===1}"
-                v-if="!!value.trim()" v-for="(value,index) in contentArray">
+            <div v-if="typeSelected==='sentence'">
+              <li class="media align-items-center list-group-item"
+                  v-bind:class="result?{'list-group-item-danger':result[index]===2,'list-group-item-success':result[index]===1}:''"
+                  v-if="!!value.trim()" v-for="(value,index) in contentArray">
+                <div class="media-body">
+                  {{value}}
+                </div>
+              </li>
+            </div>
+            <div v-if="typeSelected==='full'">
+              <li class="media align-items-center list-group-item"
+              v-bind:class="result?{'list-group-item-danger':result[0]===2,'list-group-item-success':result[0]===1}:''"
+                  v-if="!!content.trim()"
+              >
+                <div class="media-body">
+                  {{content}}
+                </div>
+              </li>
+            </div>
 
-              <div class="media-body">
-                {{value}}
-              </div>
-            </li>
             <li v-if="!hasContentArray" class="list-group-item list-group-item-danger">
               Nhập nội dung tin và ấn vào nút "Kiểm định" để thực hiện chương trình
             </li>
-            <div v-if="isLoading" class="position-absolute position-center overlap d-flex align-items-center justify-content-center">
+            <div v-if="isLoading"
+                 class="position-absolute position-center overlap d-flex align-items-center justify-content-center">
               <div class="lds-ellipsis">
                 <div></div>
                 <div></div>
@@ -97,7 +120,7 @@
       contentArray() {
         return this.$data.content.split('.')
       },
-      hasContentArray(){
+      hasContentArray() {
         return !!this.$data.content.trim()
       }
     },
@@ -109,12 +132,23 @@
           {text: 'Naive Bayes', value: 'naive_bayes'},
           {text: 'SVM', value: 'svm'}
         ],
+        typeSelected: 'full',
+        optionsType: [
+          {text: 'Theo câu', value: 'sentence'},
+          {text: 'Toàn bộ tin', value: 'full'},
+        ],
         selected: 'svm',
       }
     },
     methods: {
       fetchClassify() {
-        this.$store.dispatch(FETCH_CLASSIFY, {slug: this.$data.selected, payload: this.contentArray})
+        console.log(this.$data.typeSelected)
+        if (this.$data.typeSelected==='sentence'){
+          this.$store.dispatch(FETCH_CLASSIFY, {slug: this.$data.selected, payload: this.contentArray})
+        }
+        else{
+          this.$store.dispatch(FETCH_CLASSIFY, {slug: this.$data.selected, payload: [this.$data.content]})
+        }
       },
       resetFetch() {
         this.$store.dispatch(RESET_FETCH)
