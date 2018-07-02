@@ -21,11 +21,11 @@ class SVMViewSet(ModelViewSet, ApiBase):
     @classmethod
     def get_router(cls):
         urlpatterns = [
-            url(r'test_simple_svm/$', cls.as_view({'get': 'test_simple_svm'})),
-            url(r'test_preprocessor/$', cls.as_view({'get': 'test_preprocessor'})),
-            url(r'test_pipeline_real_classify/$', cls.as_view({'get': 'test_pipeline_real_classify'})),
+            # url(r'test_simple_svm/$', cls.as_view({'get': 'test_simple_svm'})),
+            # url(r'test_preprocessor/$', cls.as_view({'get': 'test_preprocessor'})),
+            # url(r'test_pipeline_real_classify/$', cls.as_view({'get': 'test_pipeline_real_classify'})),
             url(r'accuracy_validate/$', cls.as_view({'get': 'accuracy_validate'})),
-            url(r'svm_classify/$', cls.as_view({'post': 'svm_classify'})),
+            # url(r'svm_classify/$', cls.as_view({'post': 'svm_classify'})),
             url(r'fake_news_classify/$', cls.as_view({'post': 'fake_news_classify'})),
             # Preprocessor and save csv file of fake news training data
             url(r'save_preprocessor_to_csv/$', cls.as_view({'get': 'save_preprocessor_to_csv'})),

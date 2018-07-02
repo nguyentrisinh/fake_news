@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'fake_news_api',
     'crawler_engine',
+    'fake_news_frontend',
 ]
 
 MIDDLEWARE = [

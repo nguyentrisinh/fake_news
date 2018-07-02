@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^api/', include('fake_news_api.urls', namespace='src')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^swagger/', schema_view),
+    url(r'^', include('fake_news_frontend.urls', namespace='Fake News Frontend')),
 ]
 
 if settings.DEBUG:
