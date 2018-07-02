@@ -22,11 +22,11 @@ class DecisionTreeViewSet(ModelViewSet, ApiBase):
     @classmethod
     def get_router(cls):
         urlpatterns = [
-            url(r'stop_word_list/$', cls.as_view({'get': 'stop_word_list'})),
-            url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
-            url(r'decision_tree_classify_test/$', cls.as_view({'get': 'decision_tree_classify_test'})),
+            # url(r'stop_word_list/$', cls.as_view({'get': 'stop_word_list'})),
+            # url(r'preprocessor/$', cls.as_view({'post': 'preprocessor'})),
+            # url(r'decision_tree_classify_test/$', cls.as_view({'get': 'decision_tree_classify_test'})),
             url(r'accuracy_validate/$', cls.as_view({'get': 'accuracy_validate'})),
-            url(r'decision_tree_classify/$', cls.as_view({'post': 'decision_tree_classify'})),
+            # url(r'decision_tree_classify/$', cls.as_view({'post': 'decision_tree_classify'})),
             url(r'fake_news_classify/$', cls.as_view({'post': 'fake_news_classify'})),
             # Save preprocessor to file
             url(r'save_preprocessor_to_file/$', cls.as_view({'get': 'save_preprocessor_to_file'})),
