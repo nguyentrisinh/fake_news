@@ -19,16 +19,18 @@ class ThanhNienSpider(CrawlSpider):
     name = "thanhnien"
     allowed_domains = ["thanhnien.vn"]
     allowed_categories_re = 'thoi-su|the-gioi|chinh-tri|kinh-doanh|doi-song|van-hoa|gioi-tre|giao-duc|suc-khoe|cong-nghe'
+    # allowed_categories_re = 'thoi-su|the-gioi|chinh-tri'
 
     start_urls = [
         "https://thanhnien.vn"
     ]
     crawledLinks = []
     rules = (
-        Rule(LinkExtractor(allow='(%s)\/([\/\w-])*[0-9]*\.html$' % allowed_categories_re), callback="parse_item",follow=False),
+        Rule(LinkExtractor(allow='(%s)\/[\/\w(0-9)-]*[0-9]*\.html$' % allowed_categories_re), callback="parse_item",
+             follow=False),
         Rule(LinkExtractor(restrict_xpaths="//nav[@class='site-header__nav']//a"), follow=True),
-
-        Rule(LinkExtractor(allow='(%s)((\/trang-([0-9]|([0-2][0-9])).html$))' % allowed_categories_re), follow=True, callback=None),
+        Rule(LinkExtractor(allow='(%s)((\/trang-(\d{1,2}).html$))' % allowed_categories_re), follow=True,
+             callback=None),
     )
 
     count_number = 0
