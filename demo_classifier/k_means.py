@@ -1,9 +1,11 @@
 from test_stop_words import preprocessor
 from db import Connection
 from numpy import *
-from sklearn.naive_bayes import BernoulliNB
 from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score
+import collections
+
+n = 2
+category = 'Chinh tri'
 
 
 def createVocabList(dataSet):
@@ -23,76 +25,66 @@ def setOfWords2Vec(vocabList, inputSet):
     return returnVec
 
 
+def count_occurrences(word, sentence):
+    return sentence.lower().split().count(word)
+
+
+def createList3Times(list):
+    counter = collections.Counter(list)
+    words = []
+    for key in counter:
+        value = counter[key]
+        if value >= 3:
+            words.append(key)
+    return words
+
+
 connection = Connection()
 connection.connect()
-# lay du lieu train
 db_train_data_set = squeeze(asarray(connection.query(
-    "SELECT details FROM public.crawler_engine_fakenewstrainingmodel where category='The gioi'")))
+    "SELECT details FROM public.crawler_engine_fakenewstrainingmodel where category='%s'" % category)))
 
-# preprocessor du lieu train
+id_train_data_set = squeeze(asarray(connection.query(
+    "SELECT id FROM public.crawler_engine_fakenewstrainingmodel where category='%s'" % category)))
+
 list_train_data_set = [preprocessor(x) for x in db_train_data_set]
 
-# lay du lieu labels
-# db_train_labels = squeeze(asarray(connection.query(
-#     "SELECT category FROM public.crawler_engine_fakenewstrainingmodel offset 10 limit 10")))
+list_3_times = []
 
-# Lay du lieu test
-# db_test_data_set = squeeze(asarray(connection.query(
-#     "SELECT details FROM public.crawler_engine_fakenewstrainingmodel limit 10")))
+for x in range(len(list_train_data_set)):
+    counter = collections.Counter(list_train_data_set[x])
+    words = []
+    for key in counter:
+        value = counter[key]
+        if value >= 3:
+            words.append(key)
+    list_3_times.append(words)
 
-# preprocessor du lieu test
-# list_test_data_set = [preprocessor(x) for x in db_test_data_set]
+# list_counter_words = [collections.Counter(x) for x in list_train_data_set]
+#
+# print(list_counter_words)
 
-# lay du lieu labels
-# db_test_labels = squeeze(asarray(connection.query(
-#     "SELECT category FROM public.crawler_engine_fakenewstrainingmodel limit 10")))
+list_words = createVocabList(list_3_times)
 
-# print(type(connection.query("SELECT details FROM public.crawler_engine_newsdetail where category='Chinh tri' or category='Suc khoe' offset 10")))
-# print(connection.query("SELECT title FROM public.crawler_engine_newsdetail where category='Chinh tri' or category='Suc khoe' offset 10"))
-# print(asarray(connection.query("SELECT title FROM public.crawler_engine_newsdetail where category='Chinh tri' or category='Suc khoe' offset 10")))
-# print(squeeze(asarray(connection.query("SELECT title FROM public.crawler_engine_newsdetail where category='Chinh tri' or category='Suc khoe' offset 10"))))
-
-connection.close()
-
-# lay set cua tat ca cac tu
-list_words = createVocabList(list_train_data_set)
-
-# chuyen du lieu train sang so
-
-file = open('training.txt', 'w')
 train_mat = []
-for x in list_train_data_set:
-    file.write(' '.join(str(x) for x in setOfWords2Vec(list_words, x)))
-    file.write('\n')
+for x in list_3_times:
     train_mat.append(setOfWords2Vec(list_words, x))
 train_mat = array(train_mat)
-file.close()
 
-# print(train_mat)
-
-# chuyen du lieu test sang so
-# test_mat = []
-# for x in list_test_data_set:
-#     test_mat.append(setOfWords2Vec(list_words, x))
-
-# thuc hien thuat
-
-    db = KMeans(n_clusters=150, random_state=0).fit(train_mat)
+db = KMeans(n_clusters=n, random_state=0).fit(train_mat)
 labels = db.labels_
-print(labels)
+print(len(labels), ' record')
+
+for i in range(labels.size):
+    query = """ UPDATE public.crawler_engine_fakenewstrainingmodel
+                    SET type = %s
+                    WHERE id = %s"""
+    value = (int(labels[i]), int(id_train_data_set[i]))
+    connection.update(query, value)
 
 with open('result.txt', 'w') as f:
     for item in labels:
         f.write("%s\n" % item)
 
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-print(n_clusters_)
-
-# clf = BernoulliNB()
-# clf.fit(train_mat, db_train_labels)
-# y_pred = clf.predict(test_mat)
-# print(y_pred)
-# print(db_test_labels)
-# print(test_mat)
-# print('Training size = %d,accuracy = %.2f%%' % \
-#       (train_mat.shape[0], accuracy_score(db_test_labels, y_pred) * 100))
+print(n_clusters_, 'number of cluster')
